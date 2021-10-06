@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View, Dimensions, Alert, TextInput, Modal } from 'react-native'
-import { RNCamera } from 'react-native-camera'
-import { launchImageLibrary } from 'react-native-image-picker';
 import axios from 'axios';
-import ImagePicker from 'react-native-image-crop-picker'
+import React, { useState } from 'react';
+import { Alert, Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
+import { RNCamera } from 'react-native-camera';
+import { useCamera } from 'react-native-camera-hooks';
+import ImagePicker from 'react-native-image-crop-picker';
+import RNFS from 'react-native-fs';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -11,21 +12,44 @@ const height = Dimensions.get('window').height;
 const Home = () => {
     const formData = new FormData();
     const [image, setImage] = useState('')
-    const takePicture = async function (cameraa: any) {
-        const options = { quality: 0.5, base64: true };
-        const data = await cameraa.takePictureAsync(options);
-        setImage(data.uri);
-        console.log('data.uri', data);
+    const captureHandle = async function (cameraa: RNCamera) {
+        try {
+            const options = { quality: 0.5, base64: true };
+            const data = await cameraa.takePictureAsync(options);
+            setImage(data.uri);
+            console.log('data.uri', data.uri);
+            const filePath = data.uri;
+            // RNFS.writeFile(newFilePath, 'Lorem ipsum dolor sit amet', 'utf8')
+            const pathArr = filePath.split("/");
+            const filename = pathArr[pathArr.length - 1];
+            const newFilePath = RNFS.ExternalDirectoryPath + '/' + `${filename}`;
+            console.log('filename', filename);
+
+            RNFS.moveFile(filePath, newFilePath)
+                .then(() => {
+                    console.log('IMAGE MOVED', filePath, '-- to --', newFilePath);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        } catch (error) {
+
+        }
 
     };
     const [result, setResult] = useState('')
     const [visible, setVisible] = useState(false)
-
+    const [{ cameraRef }, { takePicture }] = useCamera(null);
     const pickMultiple = () => {
         ImagePicker.openPicker({
             multiple: true,
         })
             .then((images) => {
+                console.log('images', images);
+                images.map((item, index) => (
+                    console.log('height', item.height)
+
+                ))
                 // images.map((item, index) => {
                 //     formData.append("image", {
                 //         uri: item.path,
@@ -36,7 +60,9 @@ const Home = () => {
                 // console.log(JSON.stringify(formData));
                 formData.append("image", {
                     name: images[0]?.path,
-                    size: 'image/jpeg',
+                    size: images[0].size,
+                    width: images[0].width,
+                    height: images[0].height
                 })
 
                 axios({
@@ -44,7 +70,9 @@ const Home = () => {
                     url: "https://615bf40ec298130017735e3f.mockapi.io/uploadImage",
                     data: {
                         name: images[0].path,
-                        size: '5555'
+                        size: images[0].size,
+                        width: images[0].width,
+                        height: images[0].height
                     },
                     headers: {
                         Accept: 'application/x-www-form-urlencode',
@@ -61,11 +89,15 @@ const Home = () => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => setVisible(true)}>
-                <Text>hello</Text>
+            <TouchableOpacity onPress={() => setVisible(true)} style={{ backgroundColor: '#841584' }}>
+                <Button
+                    onPress={() => setVisible(true)}
+                    title="Chụp ảnh"
+                    color="#841584" />
             </TouchableOpacity>
             <Modal visible={visible}>
                 <RNCamera
+                    ref={cameraRef}
                     style={styles.preview}
                     type={RNCamera.Constants.Type.back}
                     flashMode={RNCamera.Constants.FlashMode.on}
@@ -75,9 +107,9 @@ const Home = () => {
                         return (
                             <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                                 <TouchableOpacity onPress={() => pickMultiple()} style={{ position: 'absolute', left: 20, bottom: 40 }}>
-                                    <Image source={{ uri: 'https://img-premium.flaticon.com/png/512/4225/premium/4225950.png?token=exp=1633404125~hmac=992393b1c30f63fb4e828ddc42dc6a3b' }} style={{ width: 80, height: 80 }} />
+                                    <Image source={{ uri: 'http://www.typeoff.de/wp-images/dan_news/typo-berlin-2008-img-dot.gif' }} style={{ width: 80, height: 80 }} />
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.capture} onPress={() => takePicture(camera)}>
+                                <TouchableOpacity style={styles.capture} onPress={() => captureHandle(camera)}>
                                     <Text style={{ fontSize: 14 }}> SNAP </Text>
                                 </TouchableOpacity>
                                 {image != '' ? <Image source={{ uri: image }} style={{ width: 100, height: 130, position: 'absolute', bottom: 40, right: 20 }} /> : null}
