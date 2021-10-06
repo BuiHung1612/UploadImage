@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import { Alert, Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { useCamera } from 'react-native-camera-hooks';
 import ImagePicker from 'react-native-image-crop-picker';
@@ -12,14 +12,19 @@ const height = Dimensions.get('window').height;
 const Home = () => {
     const formData = new FormData();
     const [image, setImage] = useState('')
-    const captureHandle = async function (cameraa: any) {
+    const captureHandle = async function (cameraa: RNCamera) {
         try {
             const options = { quality: 0.5, base64: true };
             const data = await cameraa.takePictureAsync(options);
             setImage(data.uri);
-            console.log('data.uri', data);
+            console.log('data.uri', data.uri);
             const filePath = data.uri;
-            const newFilePath = RNFS.ExternalDirectoryPath + '/MyTest.jpg';
+            // RNFS.writeFile(newFilePath, 'Lorem ipsum dolor sit amet', 'utf8')
+            const pathArr = filePath.split("/");
+            const filename = pathArr[pathArr.length - 1];
+            const newFilePath = RNFS.ExternalDirectoryPath + '/' + `${filename}`;
+            console.log('filename', filename);
+
             RNFS.moveFile(filePath, newFilePath)
                 .then(() => {
                     console.log('IMAGE MOVED', filePath, '-- to --', newFilePath);
@@ -84,8 +89,11 @@ const Home = () => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => setVisible(true)}>
-                <Text>hello</Text>
+            <TouchableOpacity onPress={() => setVisible(true)} style={{ backgroundColor: '#841584' }}>
+                <Button
+                    onPress={() => setVisible(true)}
+                    title="Chụp ảnh"
+                    color="#841584" />
             </TouchableOpacity>
             <Modal visible={visible}>
                 <RNCamera
