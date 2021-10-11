@@ -20,6 +20,7 @@
     "fbjs": "^3.0.0",
     "native-base": "^3.2.0",
     "react": "17.0.2",
+    "react-image-file-resizer": "^0.4.7",
     "react-native": "0.66.0",
     "react-native-background-actions": "^2.6.4",
     "react-native-camera": "^4.2.1",
