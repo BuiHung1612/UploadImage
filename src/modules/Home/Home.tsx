@@ -22,6 +22,8 @@ import BackIcon from 'react-native-vector-icons/Ionicons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImageIcon from 'react-native-vector-icons/FontAwesome';
 import CannelIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { showToast } from '../components/utils/ToastUtil';
+
 const options = {
     taskName: 'UpLoad File',
     taskTitle: 'Đang tải ảnh lên',
@@ -80,10 +82,17 @@ const Home = () => {
                 .then(data => {
                     console.log('Thành công', data?.data);
                     listImage.push(data?.data?.data?.link);
+
+
                     if (index == images.length - 1) {
+                        showToast({
+                            status: 'success',
+                            description: " Upload ảnh thành công."
+                        });
                         setPlaying(false);
                     }
-                })
+                }
+                )
                 .catch(error => {
                     console.log('error', error);
                 });
