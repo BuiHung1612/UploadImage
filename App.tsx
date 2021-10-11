@@ -1,12 +1,19 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
-import Home from './src/modules/Home/Home'
-import Profile from './src/modules/Profile/Profile'
+import { NativeBaseProvider } from 'native-base';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import Home from './src/modules/Home/Home';
+import Profile from './src/modules/Profile/Profile';
 
 const App = () => {
-  return <Home />
-}
+  return (
+    <NativeBaseProvider>
+      <Home />
+    </NativeBaseProvider>
+  )
 
-export default App
 
-const styles = StyleSheet.create({})
+};
+
+export default App;
+
+const styles = StyleSheet.create({});
