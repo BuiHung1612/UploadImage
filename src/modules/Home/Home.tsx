@@ -5,12 +5,6 @@ import {
     Text,
     TouchableOpacity,
     View,
-    Dimensions,
-    Alert,
-    TextInput,
-    Linking,
-    Platform,
-    FlatList,
     useWindowDimensions,
 } from 'react-native';
 import { RNCamera } from 'react-native-camera';
@@ -20,8 +14,6 @@ import ImagePicker from 'react-native-image-crop-picker';
 import BackgroundJob from 'react-native-background-actions';
 import BackIcon from 'react-native-vector-icons/Ionicons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import ImageIcon from 'react-native-vector-icons/FontAwesome';
-import CannelIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { showToast } from '../components/utils/ToastUtil';
 
 const options = {
@@ -36,6 +28,7 @@ const options = {
 };
 
 const Home = () => {
+    const [isCameraBack, setIsCameraBack] = useState(true)
     const [takeAList, setTakeAList] = useState([]);
     const [playing, setPlaying] = useState(false);
     const [listImage, setListImage] = useState([]);
@@ -83,7 +76,6 @@ const Home = () => {
                     console.log('Thành công', data?.data);
                     listImage.push(data?.data?.data?.link);
 
-
                     if (index == images.length - 1) {
                         showToast({
                             status: 'success',
@@ -106,24 +98,31 @@ const Home = () => {
         takeAList.push(data?.uri);
     };
 
-
+    const cancelAll = () => {
+        SetshowTakeaPicture(false);
+        setShowModal(false);
+    }
     const pickMultiple = () => {
         ImagePicker.openPicker({
             multiple: true,
-            mediaType: 'photo',
+            // mediaType: 'photo',
             compressImageMaxWidth: 800,
             compressImageMaxHeight: 1024,
             compressImageQuality: 0.8,
         })
             .then((images: any) => {
-                // console.log('image ', images);
-                // console.log('image sau khi resize');
 
+                console.log('images picked', images);
                 MultipleImage(images);
-                SetshowTakeaPicture(false);
-                setShowModal(false);
-            })
-            .catch(e => Alert.alert(e));
+                cancelAll()
+
+            }).catch(e => {
+                cancelAll()
+                console.log('[WARNING]', e.message)
+
+            }
+            )
+
     };
 
     const screenWidth = useWindowDimensions().width;
@@ -131,64 +130,32 @@ const Home = () => {
         <View style={styles.container}>
             <TouchableOpacity
                 onPress={() => setShowModal(true)}
-                style={{
-                    width: 100,
-                    height: 50,
-                    marginVertical: 30,
-                    borderRadius: 10,
-                    backgroundColor: 'gray',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}>
-                <Text>Click ME</Text>
+                style={styles.buttonPress}>
+                <Text style={styles.text}>Press Me</Text>
             </TouchableOpacity>
+            {
+                takeAList.map((e, index) => < Image key={index} source={{ uri: e }} style={{ width: 100, height: 100 }} />)
+            }
 
             <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-                <Modal.Content maxH="340" >
+                <Modal.Content maxH="340" backgroundColor="white" >
                     <Modal.Body>
                         <TouchableOpacity
                             style={styles.buttonTakephoto}
                             onPress={() => SetshowTakeaPicture(true)}>
-                            <Ionicons
-                                name="camera"
-                                size={26}
-                                style={{
-                                    alignSelf: 'center',
-                                    justifyContent: 'center',
-                                    paddingRight: 10,
-                                }}
-                            />
                             <Text style={styles.textTakephoto}>Take a Picture</Text>
                         </TouchableOpacity>
+
                         <TouchableOpacity
                             style={styles.buttonTakephoto}
                             onPress={() => pickMultiple()}>
-                            <ImageIcon
-                                name="image"
-                                size={26}
-                                style={{
-                                    alignSelf: 'center',
-                                    justifyContent: 'center',
-                                    paddingRight: 10,
-                                }}
-                            />
+
                             <Text style={styles.textTakephoto}>Select Photos</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={styles.buttonTakephoto}
-                            onPress={() => setShowModal(false)}>
-                            <CannelIcon
-                                name="exit-to-app"
-                                size={26}
-                                style={{
-                                    alignSelf: 'center',
-                                    justifyContent: 'center',
-                                }}
-                            />
-                            <Text
-                                style={{
-                                    marginRight: 50,
-                                }}>
+                            style={[styles.buttonTakephoto, { borderBottomWidth: 0 }]}
+                            onPress={() => cancelAll()}>
+                            <Text style={styles.textTakephoto}>
                                 Cancel
                             </Text>
                         </TouchableOpacity>
@@ -197,31 +164,30 @@ const Home = () => {
             </Modal>
 
 
-            <Modal isOpen={showTakeaPicture}>
+            <Modal isOpen={showTakeaPicture} onClose={() => cancelAll()}>
                 <RNCamera
                     style={styles.preview}
-                    type={RNCamera.Constants.Type.back}
+                    type={isCameraBack == true ? RNCamera.Constants.Type.back : RNCamera.Constants.Type.front}
                     flashMode={RNCamera.Constants.FlashMode.on}>
                     {({ camera }) => {
                         return (
                             <View style={{ flex: 1, width: screenWidth }}>
-                                <View>
-                                    <TouchableOpacity
-                                        style={styles.backButton}
-                                        onPress={() => SetshowTakeaPicture(false)}>
-                                        <BackIcon name="arrow-back" size={30} color="#ffff" />
-                                        {/* <Text>BACK</Text> */}
-                                    </TouchableOpacity>
-                                </View>
+
+                                <TouchableOpacity
+                                    style={styles.backButton}
+                                    onPress={() => cancelAll()}>
+                                    <BackIcon name="arrow-back" size={30} color="white" />
+                                </TouchableOpacity>
+
                                 <View style={styles.ViewBottom}>
-                                    <TouchableOpacity onPress={() => pickMultiple()}>
+                                    <TouchableOpacity onPress={() => pickMultiple()} >
                                         {image != '' ? (
                                             <Image
                                                 source={{ uri: image }}
                                                 style={styles.TakeAPicture}
                                             />
                                         ) : (
-                                            <ImageIcon
+                                            <Ionicons
                                                 name="image"
                                                 size={36}
                                                 color="#ffff"
@@ -232,15 +198,15 @@ const Home = () => {
                                     <TouchableOpacity onPress={() => takePicture(camera)}>
                                         <Ionicons
                                             name="camera"
-                                            size={48}
+                                            size={36}
                                             color="#ffff"
                                             style={{ alignSelf: 'center', justifyContent: 'center' }}
                                         />
                                     </TouchableOpacity>
-                                    <TouchableOpacity>
+                                    <TouchableOpacity onPress={() => setIsCameraBack(!isCameraBack)}>
                                         <Ionicons
                                             name="camera-reverse-outline"
-                                            size={48}
+                                            size={36}
                                             color="#ffff"
                                             style={{ alignSelf: 'center', justifyContent: 'center' }}
                                         />
@@ -264,6 +230,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 16,
+    },
+    buttonPress: {
+        width: 100,
+        height: 46,
+        padding: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 6,
+        marginVertical: 10
     },
     preview: {
         flex: 1,
@@ -297,19 +273,21 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 20,
         marginHorizontal: 20,
+
     },
     buttonTakephoto: {
-        padding: 10,
-        justifyContent: 'space-between',
+
+        paddingVertical: 10,
+        justifyContent: 'center',
         alignItems: 'center',
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.4,
         borderBottomColor: '#d8d8d8',
-        flexDirection: 'row',
-        marginHorizontal: 44,
+
     },
     textTakephoto: {
         fontSize: 16,
-        color: 'gray',
+        color: 'black',
+        fontWeight: '600',
         flexShrink: 1,
         textAlign: 'right',
     },

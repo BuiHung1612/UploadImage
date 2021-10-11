@@ -12,24 +12,12 @@ import {
     Keyboard,
     Animated
 } from 'react-native';
-import CameraRoll from '@react-native-community/cameraroll';
-import { Actionsheet } from 'native-base';
+import CameraRoll, { PhotoIdentifier } from '@react-native-community/cameraroll';
 import { StyleSheet } from 'react-native'
-import { HStack, Checkbox, Center, NativeBaseProvider } from "native-base"
+import { Checkbox } from "native-base"
 const Profile = () => {
-    const [data, setData] = useState('');
-    const fadeAnim = useRef(new Animated.Value(0)).current
+    const [data, setData] = useState([]);
 
-    React.useEffect(() => {
-        Animated.timing(
-            fadeAnim,
-            {
-                toValue: 1,
-                duration: 2000,
-                useNativeDriver: true
-            }
-        ).start();
-    }, [fadeAnim])
     const getPhotos = () => {
         CameraRoll.getPhotos({
             first: 50,
@@ -37,6 +25,7 @@ const Profile = () => {
         })
             .then((res) => {
                 setData(res.edges);
+
             })
             .catch((error) => {
                 console.log(error);
@@ -84,28 +73,32 @@ const Profile = () => {
         }
         else {
             let checklist = listImageChecked.filter((value: string) => value !== item)
-
             setListImageChecked(checklist)
             console.log(checklist);
         }
     }
     return (
         <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
-            {/* <View style={{ flexDirection: 'row' }}>
-        <TextInput placeholder="Nhập văn bản" style={{ borderWidth: 1 }} onFocus={() => setIsVisible(false)} enablesReturnKeyAutomatically={!isVisible} onTouchMove={() => setIsVisible(!isVisible)} />
-        <Text onPress={() => {
-          Keyboard.dismiss()
-          setIsVisible(true)
-
-        }}>image</Text>
-      </View> */}
             <TouchableOpacity onPress={() => setIsVisible(!isVisible)} style={styles.buttonStyles}>
-                <Text>Gallery</Text>
+                <Text style={styles.textTakephoto}>Gallery</Text>
             </TouchableOpacity>
-
+            <FlatList
+                data={listImageChecked}
+                numColumns={3}
+                renderItem={({ item }) => (
+                    <TouchableOpacity style={{ width: '33%', height: 130 }} onPress={() => onImageSelected(item)} >
+                        <Image
+                            style={{
+                                flex: 1
+                            }}
+                            source={{ uri: item?.node?.image?.uri }}
+                        />
+                    </TouchableOpacity>
+                )}
+            />
             {
                 isVisible == true ? (
-                    <Animated.View style={{ maxHeight: 260, opacity: fadeAnim }} >
+                    <Animated.View style={{ maxHeight: 260 }} >
                         <FlatList
                             data={data}
                             numColumns={3}
@@ -115,7 +108,7 @@ const Profile = () => {
                                         style={{
                                             flex: 1
                                         }}
-                                        source={{ uri: item.node.image.uri }}
+                                        source={{ uri: item?.node?.image?.uri }}
                                     />
                                     <Checkbox borderRadius={10} accessibilityLabel="This is a dummy checkbox" onChange={() => onImageSelected(item)} marginTop={1} right={2} value="info" position="absolute" />
 
@@ -141,10 +134,17 @@ const styles = StyleSheet.create({
         padding: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#5882FA',
+        backgroundColor: '#fff',
         borderRadius: 6,
         marginVertical: 10
-    }
+    },
+    textTakephoto: {
+        fontSize: 16,
+        color: 'black',
+        fontWeight: '600',
+        flexShrink: 1,
+        textAlign: 'right',
+    },
 })
 
 
