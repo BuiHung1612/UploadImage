@@ -7,7 +7,7 @@ import Profile from './src/modules/Profile/Profile';
 const App = () => {
   return (
     <NativeBaseProvider>
-      <Home />
+      <Profile />
     </NativeBaseProvider>
   )
 

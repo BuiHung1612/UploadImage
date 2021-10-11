@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Image,
@@ -9,12 +9,27 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
+  Keyboard,
+  Animated
 } from 'react-native';
 import CameraRoll from '@react-native-community/cameraroll';
 import { Actionsheet } from 'native-base';
 import { StyleSheet } from 'react-native'
+import { HStack, Checkbox, Center, NativeBaseProvider } from "native-base"
 const Profile = () => {
   const [data, setData] = useState('');
+  const fadeAnim = useRef(new Animated.Value(0)).current
+
+  React.useEffect(() => {
+    Animated.timing(
+      fadeAnim,
+      {
+        toValue: 1,
+        duration: 2000,
+        useNativeDriver: true
+      }
+    ).start();
+  }, [fadeAnim])
   const getPhotos = () => {
     CameraRoll.getPhotos({
       first: 50,
@@ -54,36 +69,59 @@ const Profile = () => {
 
   const [isVisible, setIsVisible] = useState(false)
   const [selectImage, setSelectImage] = useState([])
+  const [checked, setChecked] = useState(false)
+  const [listImageChecked, setListImageChecked] = useState([])
   const onHandelClose = () => {
     setIsVisible(false)
   }
-  const onImageSelected = (item) => {
-    setIsVisible(false)
+  const onImageSelected = (item: any) => {
+    const checkExist = listImageChecked.some((value: string) => value === item)
+    if (!checkExist) {
+      listImageChecked.push(item)
+      console.log(listImageChecked);
+
+    }
+    else {
+      let checklist = listImageChecked.filter((value: string) => value !== item)
+
+      setListImageChecked(checklist)
+      console.log(checklist);
+    }
   }
   return (
     <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
-      <TouchableOpacity onPress={() => setIsVisible(true)} style={styles.buttonStyles}>
+      {/* <View style={{ flexDirection: 'row' }}>
+        <TextInput placeholder="Nhập văn bản" style={{ borderWidth: 1 }} onFocus={() => setIsVisible(false)} enablesReturnKeyAutomatically={!isVisible} onTouchMove={() => setIsVisible(!isVisible)} />
+        <Text onPress={() => {
+          Keyboard.dismiss()
+          setIsVisible(true)
+
+        }}>image</Text>
+      </View> */}
+      <TouchableOpacity onPress={() => setIsVisible(!isVisible)} style={styles.buttonStyles}>
         <Text>Gallery</Text>
       </TouchableOpacity>
 
       {
         isVisible == true ? (
-          <View style={{ maxHeight: 300 }}>
+          <Animated.View style={{ maxHeight: 260, opacity: fadeAnim }} >
             <FlatList
               data={data}
               numColumns={3}
               renderItem={({ item }) => (
-                <TouchableOpacity style={{ width: '33%', height: 150 }}>
+                <TouchableOpacity style={{ width: '33%', height: 130 }} onPress={() => onImageSelected(item)} >
                   <Image
                     style={{
                       flex: 1
                     }}
                     source={{ uri: item.node.image.uri }}
                   />
+                  <Checkbox borderRadius={10} accessibilityLabel="This is a dummy checkbox" onChange={() => onImageSelected(item)} marginTop={1} right={2} value="info" position="absolute" />
+
                 </TouchableOpacity>
               )}
             />
-          </View>
+          </Animated.View>
         ) : null
       }
 
