@@ -81,13 +81,13 @@ const Home = () => {
                 .then(data => {
                     console.log('Thành công', data?.data);
                     listImage.push(data?.data?.data?.link);
-                    showToast({
-                        status: 'success',
-                        description: " Upload ảnh thành công."
-                    });
 
                     if (index == images.length - 1) {
                         setPlaying(false);
+                        showToast({
+                            status: 'success',
+                            description: " Upload ảnh thành công."
+                        });
                     }
                 }
                 )
