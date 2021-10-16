@@ -4,7 +4,10 @@ import { View, Text } from 'react-native';
 const Test = () => {
     return (
         <View>
-            <Text>Test</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ textAlign: 'left', flexShrink: 1, }}>TesestjhkTestTestTestTesttTest</Text>
+                <Text style={{ textAlign: 'right', marginLeft: 40, flexShrink: 1, }}>stTestTestTestTestTestest</Text>
+            </View>
         </View>
     )
 }

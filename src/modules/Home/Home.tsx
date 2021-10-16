@@ -23,6 +23,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImageIcon from 'react-native-vector-icons/FontAwesome';
 import CannelIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { showToast } from '../components/utils/ToastUtil';
+import RNFS from 'react-native-fs';
 
 const options = {
     taskName: 'UpLoad File',
@@ -99,11 +100,31 @@ const Home = () => {
         });
     };
 
-    const takePicture = async function (cameraa: any) {
-        const options = { quality: 1, base64: true };
-        const data: any = await cameraa.takePictureAsync(options);
-        setImage(data?.uri);
-        takeAList.push(data?.uri);
+    const takePicture = async function (cameraa: RNCamera) {
+        try {
+            const options = { quality: 1, base64: true };
+            const data: any = await cameraa.takePictureAsync(options);
+
+            setImage(data?.uri);
+            takeAList.push(data?.uri);
+            const filePath = data.uri;
+            console.log('filePath', filePath);
+
+            const pathArr = filePath.split("/");
+            const filename = pathArr[pathArr.length - 1];
+            const newFilePath = RNFS.DocumentDirectoryPath + '/' + `${filename}`;
+            console.log('filename', filename);
+            RNFS.moveFile(filePath, newFilePath)
+                .then(() => {
+                    console.log('IMAGE MOVED', filePath, '-- to --', newFilePath);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        } catch (error) {
+            console.log('[Looxi move img]');
+
+        }
     };
 
 
